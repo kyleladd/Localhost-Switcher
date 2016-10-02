@@ -1,5 +1,6 @@
 function isLocalhost(url){
-    return (getTLDomain(url) === "localhost");
+    // Should just remove the port instead of using contains
+    return (getTLDomain(url).toLowerCase().indexOf("localhost") !== -1);
 }
 
 function getIPs(callback) {
@@ -46,22 +47,24 @@ function getLocalhostLink(url){
     var protocol = url.substring(0,getFirstPosition(url,"://",false));
     // production link starts with protocol
     localLink = protocol;
+    var port = getPort(url);
     // add the TLDomain
-    localLink += "localhost" + "/";
+    localLink += "localhost" + port + "/";
     // add the rest of the url after the tld
     localLink += url.substring(getPosition(url, "/", 3)+1,url.length);
     return localLink;
 }
 function getIPLink(url,ip){
-    var productionLink = "";
+    var ipLink = "";
     var protocol = url.substring(0,getFirstPosition(url,"://",false));
     // link starts with protocol
-    productionLink = protocol;
+    ipLink = protocol;
+    var port = getPort(url);
     // add the TLDomain
-    productionLink += ip + "/";
+    ipLink += ip + port + "/";
     // add the rest of the url after the tld
-    productionLink += url.substring(getPosition(url, "/", 3)+1,url.length);
-    return productionLink;
+    ipLink += url.substring(getPosition(url, "/", 3)+1,url.length);
+    return ipLink;
 }
 
 function getTLDomain(url){
@@ -70,7 +73,6 @@ function getTLDomain(url){
     var tld = url.substring(0,endOfTLDpos);
 
     var ip_regex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/
-    console.log("tld",url.substring(protocolEndPos,endOfTLDpos));
     if(url.substring(protocolEndPos,endOfTLDpos).match(ip_regex)){
         return url.substring(protocolEndPos,endOfTLDpos);
     }
@@ -81,6 +83,13 @@ function getTLDomain(url){
         return tld.substring(startOftld,endOfTLDpos);
     }
     return url.substring(protocolEndPos,endOfTLDpos);
+}
+function getPort(url){
+    var tld = getTLDomain(url);
+    if(tld.indexOf(":") === -1){
+        return "";
+    }
+    return tld.substring(tld.indexOf(":"),tld.length);
 }
 
 function getPosition(haystack, needle, position) {
